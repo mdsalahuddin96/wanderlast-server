@@ -1,5 +1,3 @@
-//  password=YwtDd5VU33gpwWRw
-// user=wanderlastUser
 
 const express = require("express");
 const cors = require("cors");
@@ -30,7 +28,16 @@ async function run() {
       const result = await destinationColl.find().limit(5).toArray();
       res.json(result);
     });
-
+    app.get("/allDestination", async (req, res) => {
+      const result = await destinationColl.find().toArray();
+      res.json(result);
+    });
+    app.post("/addDestination",async(req,res)=>{
+      const destination=req.body;
+      const result=await destinationColl.insertOne(destination)
+      res.send(result)
+    })
+    const del=destinationColl.deleteOne({destinationName:"Bali paradise"})
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
@@ -40,6 +47,10 @@ async function run() {
   }
 }
 run().catch(console.dir);
+
+// app.get("/",(req,res)=>{
+//   res.send("Hello from server")
+// })
 
 app.listen(port, () => {
   console.log(`Wanderlast-server listening on port ${port}`);
