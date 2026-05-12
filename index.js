@@ -41,41 +41,18 @@ async function run() {
       const result = await destinationColl.insertOne(destination);
       res.send(result);
     });
-    // app.patch("/updateDestination/:id", async (req, res) => {
-    //   const { id } = req.params;
-    //   const updatedData = req.body;
-    //   const result = await destinationColl.updateOne(
-    //     { _id: new ObjectId(id) },
-    //     {
-    //       $set: updatedData,
-    //     },
-    //   );
-    //   res.json(result);
-    // });
     app.patch("/updateDestination/:id", async (req, res) => {
-      try {
-        const { id } = req.params;
-
-        const updatedData = req.body;
-        console.log("id",id)
-        console.log("data",updatedData)
-        const result = await destinationColl.updateOne(
-          { _id: new ObjectId(id) },
-          {
-            $set: updatedData,
-          },
-        );
-
-        res.json(result);
-      } catch (error) {
-        console.log(error);
-
-        res.status(500).json({
-          message: "Internal Server Error",
-          error,
-        });
-      }
+      const { id } = req.params;
+      const updatedData = req.body;
+      const result = await destinationColl.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: updatedData,
+        },
+      );
+      res.json(result);
     });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
