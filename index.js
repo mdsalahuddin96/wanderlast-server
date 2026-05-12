@@ -1,4 +1,3 @@
-
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -8,7 +7,7 @@ const port = process.env.PORT;
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = process.env.MONGO_URI;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -28,16 +27,55 @@ async function run() {
       const result = await destinationColl.find().limit(5).toArray();
       res.json(result);
     });
-    app.get("/allDestination", async (req, res) => {
+    app.get("/destination", async (req, res) => {
       const result = await destinationColl.find().toArray();
       res.json(result);
     });
-    app.post("/addDestination",async(req,res)=>{
-      const destination=req.body;
-      const result=await destinationColl.insertOne(destination)
-      res.send(result)
-    })
-    const del=destinationColl.deleteOne({destinationName:"Bali paradise"})
+    app.get("/destinationDetails/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await destinationColl.findOne({ _id: new ObjectId(id) });
+      res.json(result);
+    });
+    app.post("/addDestination", async (req, res) => {
+      const destination = req.body;
+      const result = await destinationColl.insertOne(destination);
+      res.send(result);
+    });
+    // app.patch("/updateDestination/:id", async (req, res) => {
+    //   const { id } = req.params;
+    //   const updatedData = req.body;
+    //   const result = await destinationColl.updateOne(
+    //     { _id: new ObjectId(id) },
+    //     {
+    //       $set: updatedData,
+    //     },
+    //   );
+    //   res.json(result);
+    // });
+    app.patch("/updateDestination/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+
+        const updatedData = req.body;
+        console.log("id",id)
+        console.log("data",updatedData)
+        const result = await destinationColl.updateOne(
+          { _id: new ObjectId(id) },
+          {
+            $set: updatedData,
+          },
+        );
+
+        res.json(result);
+      } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+          message: "Internal Server Error",
+          error,
+        });
+      }
+    });
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
