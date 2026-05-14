@@ -23,6 +23,7 @@ async function run() {
     await client.connect();
     const db = client.db("wanderlastDB");
     const destinationColl = db.collection("destinations");
+    const bookingColl = db.collection("bookings");
     app.get("/featuredDes", async (req, res) => {
       const result = await destinationColl.find().limit(5).toArray();
       res.json(result);
@@ -36,10 +37,20 @@ async function run() {
       const result = await destinationColl.findOne({ _id: new ObjectId(id) });
       res.json(result);
     });
+    app.get("/mybookings/:id",async(req,res)=>{
+      const {id}=req.params;
+      const result=await bookingColl.find({userId:id}).toArray();
+      res.json(result);
+    })
     app.post("/addDestination", async (req, res) => {
       const destination = req.body;
       const result = await destinationColl.insertOne(destination);
       res.send(result);
+    });
+    app.post("/bookings", async (req, res) => {
+      const data = req.body;
+      const result = await bookingColl.insertOne(data);
+      res.json(result);
     });
     app.patch("/updateDestination/:id", async (req, res) => {
       const { id } = req.params;
@@ -52,11 +63,12 @@ async function run() {
       );
       res.json(result);
     });
-    app.delete("/deleteDestination/:id",async(req,res)=>{
-      const {id}=req.params
-      const result=await destinationColl.deleteOne({_id:new ObjectId(id)})
+
+    app.delete("/deleteDestination/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await destinationColl.deleteOne({ _id: new ObjectId(id) });
       res.json(result);
-    })
+    });
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
