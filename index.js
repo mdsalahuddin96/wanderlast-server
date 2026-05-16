@@ -37,11 +37,22 @@ async function run() {
       const result = await destinationColl.findOne({ _id: new ObjectId(id) });
       res.json(result);
     });
-    app.get("/mybookings/:id",async(req,res)=>{
-      const {id}=req.params;
-      const result=await bookingColl.find({userId:id}).toArray();
-      res.json(result);
-    })
+    app.get(
+      "/mybookings/:id",
+      (req, res, next) => {
+        const header = req.headers.authorization;
+        if (header === "loged out") {
+          next();
+        } else {
+          res.status(401).json({ message: "Unauthorized" });
+        }
+      },
+      async (req, res) => {
+        const { id } = req.params;
+        const result = await bookingColl.find({ userId: id }).toArray();
+        res.json(result);
+      },
+    );
     app.post("/addDestination", async (req, res) => {
       const destination = req.body;
       const result = await destinationColl.insertOne(destination);
@@ -67,6 +78,12 @@ async function run() {
     app.delete("/deleteDestination/:id", async (req, res) => {
       const { id } = req.params;
       const result = await destinationColl.deleteOne({ _id: new ObjectId(id) });
+      res.json(result);
+    });
+
+    app.delete("/cancelBooking/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await bookingColl.deleteOne({ _id: new ObjectId(id) });
       res.json(result);
     });
     await client.db("admin").command({ ping: 1 });
